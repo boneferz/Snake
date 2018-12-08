@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.effect.Glow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="295.0" prefWidth="448.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+   <children>
+      <ImageView pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@res/bg.png" />
+         </image>
+      </ImageView>
+      <Label fx:id="textScore" layoutX="55.0" layoutY="192.0" text="153" textFill="WHITE">
+         <font>
+            <Font name="Aldo the Apache" size="20.0" />
+         </font>
+         <effect>
+            <Glow level="0.5" />
+         </effect>
+      </Label>
+      <Label fx:id="textDeath" layoutX="56.0" layoutY="256.0" text="4" textFill="#4d2020">
+         <font>
+            <Font name="Aldo the Apache" size="20.0" />
+         </font>
+         <effect>
+            <Glow level="0.5" />
+         </effect>
+      </Label>
+      <Label fx:id="textRecord" layoutX="50.0" layoutY="50.0" text="300" textFill="#ebd87c">
+         <font>
+            <Font name="Aldo the Apache" size="30.0" />
+         </font>
+         <effect>
+            <Glow level="0.5" />
+         </effect>
+      </Label>
+      <Pane fx:id="gameField" disable="true" layoutX="125.0" layoutY="19.0" prefHeight="257.0" prefWidth="305.0" style="-fx-background-color: transparent;" />
+   </children>
+</AnchorPane>
