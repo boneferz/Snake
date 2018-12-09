@@ -9,9 +9,14 @@ public class SnakeBody {
 	public double tempX;
 	public double tempY;
 	
-	public SnakeBody(double x, double y) {
-		tempX = x;
-		tempY = y;
+	public void init(int x, int y) {
+		body[0].setX(x);
+		body[0].setY(y);
+		body[0].setOpacity(1);
+		body[0].setRotate(45);
+	}
+	
+	public SnakeBody() {
 		addPart();
 	}
 	
@@ -29,7 +34,6 @@ public class SnakeBody {
 		ImageView imageView = new ImageView(bodyImg);
 		imageView.setX(tempX);
 		imageView.setY(tempY);
-		imageView.setOpacity(0.75);
 		body[body.length - 1] = imageView;
 		length++;
 		return imageView;
@@ -60,6 +64,32 @@ public class SnakeBody {
 			localTempPreviousY = localTempCurrentY;
 		}
 	}
+	
+	public boolean suicide() {
+		for (int i = 1; i < body.length; i++) {
+			if (body[0].getX() == body[i].getX()
+					&& body[0].getY() == body[i].getY()) {
+				System.out.println("[suicide]");
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public void die() {
+		for (int i = 0; i < body.length; i++) {
+			body[i].setOpacity(0.65);
+		}
+	}
+	
+	public void destroy() {
+		ImageView[] newArr = new ImageView[1];
+		newArr[0] = body[0];
+		body = newArr;
+		length = 2;
+	}
+	
+	
 	
 	public void setX(double x) {
 		body[0].setX(x);

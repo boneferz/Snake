@@ -5,8 +5,10 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.util.Duration;
@@ -42,6 +44,11 @@ public class Controller {
 	private final String DOWN = "down";
 	private final String LEFT = "left";
 	private final String RIGHT = "right";
+	private boolean isWent = true;
+	private boolean wentUp = false;
+	private boolean wentDown = false;
+	private boolean wentLeft = false;
+	private boolean wentRight = false;
 	
 	private final int pixel = 15;
 	private final int widthGameField = 19;
@@ -61,7 +68,8 @@ public class Controller {
 	private ImageView apples[];
 	
 	private boolean isLive = false;
-	
+	private ColorAdjust filterForApple = new ColorAdjust(
+			0, 0, -1, 0);
 	
 	
 	private void init() {
@@ -79,10 +87,7 @@ public class Controller {
 		Main.stage.addEventHandler(KeyEvent.KEY_PRESSED, this::onKeyListener);
 		
 		// snake
-		snake = new SnakeBody(3 * step, 3 * step);
-		gameField.getChildren().add(snake.getHead());
-		snake.setX(1);
-		snake.setY(1);
+		snake = new SnakeBody();
 	}
 	
 	private void reset() {
@@ -96,12 +101,8 @@ public class Controller {
 		keyVector = RIGHT;
 
 		// snake
-		snake.getHead().setOpacity(1);
-		snake.setX(3 * step + 1);
-		snake.setY(3 * step + 1);
-		
-		gameField.getChildren().add(snake.addPart());
-		gameField.getChildren().add(snake.addPart());
+		gameField.getChildren().add(snake.getHead());
+		snake.init(3 * step + 1, 3 * step + 1);
 	}
 	
 	@FXML
@@ -125,10 +126,8 @@ public class Controller {
 					|| snake.getY() > borderBottom - step && keyVector.equals(DOWN)
 					|| snake.getX() > borderRight - step && keyVector.equals(RIGHT)
 					|| snake.getX() < borderLeft + step && keyVector.equals(LEFT)) {
+				snakeDie();
 				System.out.println("    (-life)");
-				
-				die();
-				
 			} else {
 				// move
 				switch (keyVector) {
@@ -145,17 +144,17 @@ public class Controller {
 						snake.move(snake.getX() + step, snake.getY());
 						break;
 				}
+				
+				if (keyVector.equals(UP)
+						|| keyVector.equals(DOWN)
+						|| keyVector.equals(LEFT)
+						|| keyVector.equals(RIGHT)) isWent = true;
+				
+				if (snake.suicide()) snakeDie();
 			}
 			
 			// collision with apples
-			for (int i = 0; i < apples.length; i++) {
-				if (snake.getX() == apples[i].getX() && snake.getY() == apples[i].getY()) {
-					System.out.println("[collect]");
-					apples[i].setRotate(45);
-					apples[i].setOpacity(0.15);
-					setScore(score += 15);
-				}
-			}
+			onCollectLoot();
 		}
 	}
 	
@@ -163,14 +162,16 @@ public class Controller {
 	*                   GAMEPLAY
 	*==================================================*/
 	
-	private void die() {
+	private void snakeDie() {
 		isLive = false;
+		
+		snake.die();
+
 		setDeath(++death);
-		
-		snake.getHead().setOpacity(0.5);
-		
 		if (record < score) setRecord(score);
 		setScore(0);
+		
+		System.out.println("--die--");
 	}
 	
 	private void addLoot() {
@@ -185,9 +186,23 @@ public class Controller {
 	
 	private ImageView addApple() {
 		Image bodyImg = new Image("sample/res/apple.png");
-//		ImageView imageView = new ImageView(bodyImg);
 		return new ImageView(bodyImg);
 	}
+	
+	private void onCollectLoot() {
+		for (int i = 0; i < apples.length; i++) {
+			if (snake.getX() == apples[i].getX() && snake.getY() == apples[i].getY()) {
+				apples[i].setOpacity(0.05);
+				apples[i].setEffect(filterForApple);
+				
+//				addLoot();
+				addSnakePart();
+				
+				setScore(score += 15);
+			}
+		}
+	}
+	
 	
 	
 	/*===================================================
@@ -196,31 +211,43 @@ public class Controller {
 	
 	private void onKeyListener(KeyEvent e) {
 		switch (e.getCode()) {
-			case UP:
-				if (!keyVector.equals(DOWN))
-					keyVector = UP;
-				break;
-			case DOWN:
-				if (!keyVector.equals(UP))
-					keyVector = DOWN;
-				break;
-			case LEFT:
-				if (!keyVector.equals(RIGHT))
-				keyVector = LEFT;
-				break;
-			case RIGHT:
-				if (!keyVector.equals(LEFT))
-				keyVector = RIGHT;
-				break;
-				
 			case ESCAPE:
+				for (int i = 0; i < snake.body.length; i++) {
+					gameField.getChildren().remove(snake.body[i]);
+				}
+				snake.destroy();
 				reset();
 				break;
-				
 			case SHIFT:
-				gameField.getChildren().add(snake.addPart());
+				addSnakePart();
 				break;
 		}
+		
+		if ((e.getCode() == KeyCode.UP
+				|| e.getCode() == KeyCode.DOWN
+				|| e.getCode() == KeyCode.LEFT
+				|| e.getCode() == KeyCode.RIGHT) && isWent) {
+			isWent = false;
+			
+			switch (e.getCode()) {
+				case UP:
+					if (!keyVector.equals(DOWN)) keyVector = UP;
+					break;
+				case DOWN:
+					if (!keyVector.equals(UP)) keyVector = DOWN;
+					break;
+				case LEFT:
+					if (!keyVector.equals(RIGHT)) keyVector = LEFT;
+					break;
+				case RIGHT:
+					if (!keyVector.equals(LEFT)) keyVector = RIGHT;
+					break;
+			}
+		}
+	}
+	
+	private void addSnakePart() {
+		gameField.getChildren().add(snake.addPart());
 	}
 	
 	/*===================================================
