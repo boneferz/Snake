@@ -54,8 +54,8 @@ public class SnakeBody {
 			localTempCurrentX = body[i].getX();
 			localTempCurrentY = body[i].getY();
 			if (i == 0) {
-				body[0].setX(x);
-				body[0].setY(y);
+				body[0].setX(body[0].getX() + x);
+				body[0].setY(body[0].getY() + y);
 			} else {
 				body[i].setX(localTempPreviousX);
 				body[i].setY(localTempPreviousY);
@@ -65,11 +65,10 @@ public class SnakeBody {
 		}
 	}
 	
-	public boolean suicide() {
+	public boolean suicide(int vectorX, int vectorY) {
 		for (int i = 1; i < body.length; i++) {
-			if (body[0].getX() == body[i].getX()
-					&& body[0].getY() == body[i].getY()) {
-				System.out.println("[suicide]");
+			if (body[0].getX() + vectorX == body[i].getX()
+					&& body[0].getY() + vectorY == body[i].getY()) {
 				return true;
 			}
 		}
