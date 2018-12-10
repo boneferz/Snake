@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="295.0" prefWidth="448.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+<AnchorPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="295.0" prefWidth="448.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
    <children>
       <ImageView layoutX="-7.0" layoutY="-6.0" pickOnBounds="true" preserveRatio="true">
          <image>
@@ -39,7 +39,7 @@
             <Glow level="0.5" />
          </effect>
       </Label>
-      <Pane fx:id="gameField" disable="true" layoutX="125.0" layoutY="19.0" prefHeight="257.0" prefWidth="305.0" style="-fx-background-color: transparent;" />
+      <Pane fx:id="gameField" layoutX="125.0" layoutY="19.0" prefHeight="257.0" prefWidth="305.0" style="-fx-background-color: transparent;" />
       <Label fx:id="textLength" layoutX="54.0" layoutY="127.0" text="12" textFill="#282727">
          <font>
             <Font name="Aldo the Apache" size="20.0" />

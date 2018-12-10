@@ -9,19 +9,27 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.util.Duration;
+
+import java.awt.*;
+import java.util.ArrayList;
 
 public class Controller {
 	
 	@FXML
-	private Pane gameField;
+	Pane gameField;
 	
 	@FXML
 	private Label textScore;
 	
 	@FXML
 	private Label textDeath;
+	
+	@FXML
+	private AnchorPane root;
 	
 	@FXML
 	private Label textLength;
@@ -38,8 +46,8 @@ public class Controller {
 	private Image wallImg = new Image("sample/res/wallBlock.png");
 	private ImageView wall = new ImageView(wallImg);
 	
-	private int fps = 100;
-	private final Timeline timeline = new Timeline();
+	private int fps = 200;
+	private Timeline timeline = new Timeline();
 	
 	private String direction;
 	private int vectorX = 1;
@@ -49,15 +57,11 @@ public class Controller {
 	private final String LEFT = "left";
 	private final String RIGHT = "right";
 	private boolean isWent = true;
-	private boolean wentUp = false;
-	private boolean wentDown = false;
-	private boolean wentLeft = false;
-	private boolean wentRight = false;
 	
-	private final int pixel = 15;
-	private final int widthGameField = 19;
-	private final int heightGameField = 16;
-	private final int step = pixel + 1;
+	final int pixel = 15;
+	final int widthGameField = 19;
+	final int heightGameField = 16;
+	final int step = pixel + 1;
 	
 	private final int borderTop = 0;
 	private final int borderLeft = 0;
@@ -65,30 +69,35 @@ public class Controller {
 	private final int borderRight = widthGameField * step;
 	
 	private int record = 0;
-	private int score = 0;
+	int score = 0;
 	private int death = 0;
-	private int length = 1;
+	int length = 1;
 	
-	private SnakeBody snake;
-	private ImageView apples[];
+	SnakeBody snake;
+
 	private ImageView wallBlocks[];
-	private int countApples = 0;
+	private int wallCount = 0;
+	ArrayList<Point> wallPositionsMap = new ArrayList<>();
+	private int[][] level =
+			{{3, 2}, {2, 2}, {2, 3}, {2, 12}, {2, 13}, {3, 13}, {15, 13},
+					{16, 13}, {16, 12}, {16, 3}, {16, 2}, {15, 2}, {9, 2},
+					{9, 3}, {9, 12}, {9, 13}, {2, 8}, {2, 7}, {16, 7},
+					{16, 8}, {9, 8}, {9, 7}, {9, 9}, {9, 6}, {6, 2},
+					{12, 2}, {6, 13}, {12, 13}};
+
 	
 	private boolean isLive = false;
-	private ColorAdjust filterForApple = new ColorAdjust(
+	ColorAdjust filterForApple = new ColorAdjust(
 			0, 0, -1, 0);
+	private boolean isShaking = false;
 	
-	
+	private Apples apples;
 	
 	private void init() {
 		// enter frame loop
 		timeline.setCycleCount(Timeline.INDEFINITE);
-		timeline.setAutoReverse(true);
 		timeline.setOnFinished( e -> onUpdate());
-		
-		Duration duration = Duration.millis(fps);
-		KeyFrame keyFrame = new KeyFrame(duration, timeline.getOnFinished());
-		timeline.getKeyFrames().add(keyFrame);
+		timeline.getKeyFrames().add(new KeyFrame(Duration.millis(fps), timeline.getOnFinished()));
 		timeline.play();
 		
 		// keys listener
@@ -96,6 +105,19 @@ public class Controller {
 		
 		// snake
 		snake = new SnakeBody();
+		
+		// wall
+		wallBlocks = new ImageView[level.length];
+		for (int i = 0; i < level.length; i++) {
+			wallBlocks[wallCount] = addWall();
+			gameField.getChildren().add(wallBlocks[wallCount]);
+			wallBlocks[wallCount].setX((level[i][0]) * step + 1);
+			wallBlocks[wallCount].setY((level[i][1]) * step + 1);
+			wallCount++;
+		}
+		
+		//
+		apples = new Apples(this);
 	}
 	
 	private void reset() {
@@ -112,23 +134,6 @@ public class Controller {
 		// snake
 		gameField.getChildren().add(snake.getHead());
 		snake.init(1, 1);
-		
-		// wall
-		wallBlocks = new ImageView[3];
-		wallBlocks[0] = addWall();
-		gameField.getChildren().add(wallBlocks[0]);
-		wallBlocks[0].setX(3 * step + 1);
-		wallBlocks[0].setY(2 * step + 1);
-		
-		wallBlocks[1] = addWall();
-		gameField.getChildren().add(wallBlocks[1]);
-		wallBlocks[1].setX(2 * step + 1);
-		wallBlocks[1].setY(2 * step + 1);
-		
-		wallBlocks[2] = addWall();
-		gameField.getChildren().add(wallBlocks[2]);
-		wallBlocks[2].setX(2 * step + 1);
-		wallBlocks[2].setY(3 * step + 1);
 	}
 	
 	@FXML
@@ -137,9 +142,47 @@ public class Controller {
 		init();
 		reset();
 		
-		addLoot(40);
+		apples.addLoot(40);
 		
+		levelRedactor();
 	}
+	
+	private void levelRedactor() {
+		gameField.addEventHandler(MouseEvent.MOUSE_CLICKED, this::onGameFieldListener);
+	}
+	
+	private void onGameFieldListener(MouseEvent e) {
+		Point pointOfClick = new Point();
+		pointOfClick.x = ( ((int) e.getX()) - ((int) e.getX()) % step ) / step;
+		pointOfClick.y = ( ((int) e.getY()) - ((int) e.getY()) % step ) / step;
+		
+		wallPositionsMap.add(pointOfClick);
+		
+		
+		System.out.println("point: " + pointOfClick);
+		System.out.println("");
+		
+		Image w = new Image("sample/res/apple.png");
+		ImageView wView = new ImageView(w);
+		wView.setOpacity(0.5);
+		wView.setX(pointOfClick.x * step + 1);
+		wView.setY(pointOfClick.y * step + 1);
+		gameField.getChildren().add(wView);
+	}
+	
+	private void parseLevelArr() {
+		String levelTxt = "{";
+		for (int i = 0; i < wallPositionsMap.size(); i++) {
+			levelTxt += "{" + wallPositionsMap.get(i).x + ", "+ wallPositionsMap.get(i).y + "}";
+			if (i != wallPositionsMap.size() - 1) levelTxt += ", ";
+			if (i != 0 && i % 6 == 0) levelTxt += "\n";
+		}
+		levelTxt += "}";
+		// output level data
+		System.out.println(levelTxt);
+	}
+	
+	
 
 	/*===================================================
 	*                   TIMELINE
@@ -184,14 +227,17 @@ public class Controller {
 			
 			// death > wall
 			for (int i = 0; i < wallBlocks.length; i++) {
-				if (snake.getX() + (step * vectorX) == wallBlocks[i].getX()
-						&& snake.getY() + (step * vectorY) == wallBlocks[i].getY()) {
-					System.out.println("death >> wall");
-					snakeDie();
-					return;
-				}// snake.move( vectorX * step,  vectorY * step);
-				// body[0].getX() + x
-				// snake.getX() + (step * vectorX)
+				
+				if (wallBlocks[i] == null) {
+					System.out.println("wall|i:" + i + "||" + wallBlocks[i]);
+				} else {
+					if (snake.getX() + (step * vectorX) == wallBlocks[i].getX()
+							&& snake.getY() + (step * vectorY) == wallBlocks[i].getY()) {
+						System.out.println("death >> wall");
+						snakeDie();
+						return;
+					}
+				}
 			}
 			
 			// move
@@ -204,7 +250,7 @@ public class Controller {
 					|| direction.equals(RIGHT)) isWent = true;
 			
 			// apples
-			onCollectLoot();
+			apples.onCollectLoot();
 		}
 	}
 	
@@ -216,6 +262,7 @@ public class Controller {
 		isLive = false;
 		
 		snake.die();
+		Shake.toShake(root);
 
 		setDeath(++death);
 		if (record < score) setRecord(score);
@@ -226,51 +273,6 @@ public class Controller {
 		Image wallImg = new Image("sample/res/wallBlock.png");
 		return new ImageView(wallImg);
 	}
-	
-	private void addLoot(int amount) {
-		countApples = amount;
-		apples = new ImageView[amount];
-		for (int i = 0; i < apples.length; i++) {
-			apples[i] = addApple();
-			apples[i].setX(((int) (Math.random() * widthGameField)) * step + 1);
-			apples[i].setY(((int) (Math.random() * heightGameField)) * step + 1);
-			gameField.getChildren().add(apples[i]);
-		}
-	}
-	
-	private ImageView addApple() {
-		Image bodyImg = new Image("sample/res/apple.png");
-		return new ImageView(bodyImg);
-	}
-	
-	private void onCollectLoot() {
-		int index = 0;
-		if (countApples != 0) {
-			for (int i = 0; i < apples.length; i++) {
-				if (apples[i] != null) {
-					if (snake.getX() == apples[i].getX() && snake.getY() == apples[i].getY()) {
-						index = i;
-						countApples--;
-						
-						apples[i].setOpacity(0.1);
-						apples[i].setEffect(filterForApple);
-						apples[i] = null;
-						
-						addSnakePart();
-						
-						setScore(score += 15);
-						setLength(++length);
-					}
-				}
-			}
-		} else {
-			countApples = 20;
-			addLoot(20);
-		}
-		
-	}
-	
-	
 	
 	/*===================================================
 	*                   LISTENERS
@@ -286,8 +288,13 @@ public class Controller {
 				setLength(1);
 				reset();
 				break;
+				
 			case SHIFT:
-				addSnakePart();
+				gameField.getChildren().add(snake.addPart());
+				break;
+				
+			case CONTROL:
+				parseLevelArr();
 				break;
 		}
 		
@@ -312,10 +319,6 @@ public class Controller {
 					break;
 			}
 		}
-	}
-	
-	private void addSnakePart() {
-		gameField.getChildren().add(snake.addPart());
 	}
 	
 	/*===================================================
