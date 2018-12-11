@@ -1,15 +1,23 @@
 package sample;
 
+import javafx.scene.Node;
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
 
 public class Apples {
-	private Controller root;
+	
+	private Pane parent;
+	private GameField gameField;
+	
 	private ImageView apples[];
 	private int countApples = 0;
+	ColorAdjust filterForApple = new ColorAdjust(0, 0, -1, 0);
 	
-	public Apples(Controller root) {
-		this.root = root;
+	
+	public Apples(Node rootPane, GameField gameFieldData) {
+		this.parent = parent;
 	}
 	
 	void addLoot(int amount) {
@@ -17,9 +25,9 @@ public class Apples {
 		apples = new ImageView[amount];
 		for (int i = 0; i < apples.length; i++) {
 			apples[i] = addApple();
-			apples[i].setX(((int) (Math.random() * root.widthGameField)) * root.step + 1);
-			apples[i].setY(((int) (Math.random() * root.heightGameField)) * root.step + 1);
-			root.gameField.getChildren().add(apples[i]);
+			apples[i].setX(((int) (Math.random() * gameField.widthGameField)) * gameField.step + 1);
+			apples[i].setY(((int) (Math.random() * gameField.heightGameField)) * gameField.step + 1);
+			parent.getChildren().add(apples[i]);
 		}
 	}
 	
@@ -28,7 +36,7 @@ public class Apples {
 		return new ImageView(bodyImg);
 	}
 	
-	void onCollectLoot() {
+	/*void onCollectLoot() {
 		int index = 0;
 		if (countApples != 0) {
 			for (int i = 0; i < apples.length; i++) {
@@ -53,6 +61,6 @@ public class Apples {
 			addLoot(20);
 		}
 		
-	}
+	}*/
 	
 }

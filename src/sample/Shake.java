@@ -6,15 +6,19 @@ import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.util.Duration;
 
-public class Shake {
-	private static Node shakeObject;
-	private static Timeline shakeTimeline = new Timeline();
+public final class Shake { // singleton
+	
+	private static final Shake instance = new Shake();
+	
+	private Node shakeObject;
+	private Timeline shakeTimeline;
 	private final int SHAKE_DURATION = 4;
 	private int shakeDuration = SHAKE_DURATION;
 	private int shakeSpeedDuration = 100;
 	private int shakePower = 2;
 	
 	public Shake() {
+		shakeTimeline = new Timeline();
 		shakeTimeline.setCycleCount(Timeline.INDEFINITE);
 		shakeTimeline.setOnFinished(this::onShake);
 		shakeTimeline.getKeyFrames().add(new KeyFrame(
@@ -23,8 +27,8 @@ public class Shake {
 	}
 	
 	public static void toShake(Node node) {
-		shakeObject = node;
-		shakeTimeline.play();
+		instance.shakeObject = node;
+		instance.shakeTimeline.play();
 	}
 	
 	private void onShake(ActionEvent a) {

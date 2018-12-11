@@ -39,7 +39,7 @@
             <Glow level="0.5" />
          </effect>
       </Label>
-      <Pane fx:id="gameField" layoutX="125.0" layoutY="19.0" prefHeight="257.0" prefWidth="305.0" style="-fx-background-color: transparent;" />
+      <Pane fx:id="gamePane" layoutX="125.0" layoutY="19.0" prefHeight="257.0" prefWidth="305.0" style="-fx-background-color: transparent;" />
       <Label fx:id="textLength" layoutX="54.0" layoutY="127.0" text="12" textFill="#282727">
          <font>
             <Font name="Aldo the Apache" size="20.0" />
