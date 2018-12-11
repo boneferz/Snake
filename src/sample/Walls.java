@@ -1,30 +1,39 @@
 package sample;
 
-import javafx.scene.Node;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
-
-import java.awt.*;
+import java.awt.Point;
 import java.util.ArrayList;
 
 public class Walls {
 	private Pane parent;
 	private GameField gameField;
+	private LevelMap level;
 	
-	private ImageView wallBlocks[];
-	private int wallCount = 0;
+	public ImageView wallBlocks[];
 	ArrayList<Point> wallPositionsMap = new ArrayList<>();
 	
-	
-	/*public Walls(Node rootPane, GameField gameFieldData) {
-		// wall
-		wallBlocks = new ImageView[level.length];
-		for (int i = 0; i < level.length; i++) {
-			wallBlocks[wallCount] = addWall();
-			parent.getChildren().add(wallBlocks[wallCount]);
-			wallBlocks[wallCount].setX((level[i][0]) * step + 1);
-			wallBlocks[wallCount].setY((level[i][1]) * step + 1);
-			wallCount++;
+	public Walls(Pane rootPane, GameField gameFieldData) {
+		this.parent = rootPane;
+		this.gameField = gameFieldData;
+		
+		level = new LevelMap();
+		wallBlocks = new ImageView[level.getLevel().length];
+		System.out.println(level.getLevel().length);
+		System.out.println(addWall());
+		
+		
+		for (int i = 0; i < level.getLevel().length; i++) {
+			wallBlocks[i] = addWall();
+			parent.getChildren().add(wallBlocks[i]);
+			wallBlocks[i].setX((level.getLevel()[i][0]) * gameFieldData.step + 1);
+			wallBlocks[i].setY((level.getLevel()[i][1]) * gameFieldData.step + 1);
 		}
-	}*/
+	}
+	
+	private ImageView addWall() {
+		Image wallImg = new Image("sample/res/wallBlock.png");
+		return new ImageView(wallImg);
+	}
 }

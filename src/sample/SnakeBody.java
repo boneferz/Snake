@@ -39,7 +39,6 @@ public class SnakeBody {
 	public static final String DEATH = "death";
 	
 	
-	
 	// Consctructor() >> разовая инициализация
 	public SnakeBody(Pane rootPane, GameField gameFieldData, int initX, int initY) {
 		this.parent = rootPane;
@@ -98,22 +97,6 @@ public class SnakeBody {
 	
 	public void snakeMove() {
 		if (isLive) {
-			// death > borders
-			if (getY() < gameField.borderTop + gameField.step && direction.equals(UP)
-					|| getY() > gameField.borderBottom - gameField.step && direction.equals(DOWN)
-					|| getX() > gameField.borderRight - gameField.step && direction.equals(RIGHT)
-					|| getX() < gameField.borderLeft + gameField.step && direction.equals(LEFT)) {
-				System.out.println("die();");
-				die();
-				return;
-			}
-			
-			// death > suicide
-			if (suicide(vectorX * gameField.step, vectorY * gameField.step)) {
-				die();
-				return;
-			}
-			
 			// switch vector direction
 			switch (direction) {
 				case UP:
@@ -134,6 +117,22 @@ public class SnakeBody {
 					break;
 			}
 			
+			// death > borders
+			if (nextY() < gameField.borderTop
+					|| nextY() > gameField.borderBottom
+					|| nextX() > gameField.borderRight
+					|| nextX() < gameField.borderLeft ) {
+				System.out.println("die();");
+				die();
+				return;
+			}
+			
+			// death > suicide
+			if (suicide()) {
+				die();
+				return;
+			}
+			
 			// went to setting
 			if (direction.equals(UP)
 					|| direction.equals(DOWN)
@@ -143,6 +142,22 @@ public class SnakeBody {
 			// move
 			move( vectorX * gameField.step,  vectorY * gameField.step);
 		}
+	}
+	
+	private boolean suicide() {
+		for (int i = 1; i < body.length; i++) {
+			if (nextX() == body[i].getX() && nextY() == body[i].getY()) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public double nextX() {
+		return body[0].getX() + vectorX * gameField.step;
+	}
+	public double nextY() {
+		return body[0].getY() + vectorY * gameField.step;
 	}
 	
 	private void move(double x, double y) {
@@ -204,17 +219,6 @@ public class SnakeBody {
 					break;
 			}
 		}
-		System.out.println(":" + direction);
-	}
-	
-	private boolean suicide(int vectorX, int vectorY) {
-		for (int i = 1; i < body.length; i++) {
-			if (body[0].getX() + vectorX == body[i].getX()
-					&& body[0].getY() + vectorY == body[i].getY()) {
-				return true;
-			}
-		}
-		return false;
 	}
 	
 	private void die() {
@@ -236,7 +240,6 @@ public class SnakeBody {
 		body = newArr;
 		length = 2;
 	}
-	
 	
 	
 	public void setX(double x) {

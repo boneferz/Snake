@@ -45,17 +45,17 @@ public class Controller {
 	private SnakeBody snake;
 	private Apples apples;
 	private Walls walls;
-	private LevelMap level;
+	private Collisions isHit;
 	
 	
 	@FXML
 	public void initialize () {
 		// objects instance
 		gameFieldData = new GameField();
-		level = new LevelMap();
-//		walls = new Walls(gamePane, gameFieldData);
-//		apples = new Apples(gamePane, gameFieldData);
+		Collisions isHit = new Collisions();
+		walls = new Walls(gamePane, gameFieldData);
 		snake = new SnakeBody(gamePane, gameFieldData, 1, 2);
+//		apples = new Apples(gamePane, gameFieldData);
 		
 		// set data
 		setRecord(record);
@@ -140,26 +140,9 @@ public class Controller {
 		
 		snake.snakeMove();
 		
-		if (snake.isLive()) {
+		isHit.collision(snake, walls.wallBlocks);
 		
-		
-//			apples.onCollectLoot(); <<<<<<
-			
-			// death > wall <<<<<<
-			/*for (int i = 0; i < wallBlocks.length; i++) {
-				if (wallBlocks[i] == null) {
-//					System.out.println("wall|i:" + i + "||" + wallBlocks[i]);
-				} else {
-					if (snake.getX() + (step * vectorX) == wallBlocks[i].getX()
-							&& snake.getY() + (step * vectorY) == wallBlocks[i].getY()) {
-//						System.out.println("death >> wall");
-						snakeDie();
-						return;
-					}
-				}
-			}*/
-			
-		}
+//		apples.onCollectLoot(); <<<<<<
 	}
 	
 	private void snakeDie() {
@@ -169,11 +152,6 @@ public class Controller {
 		setDeath(++death);
 		setScore(0);
 	}
-	
-	/*private ImageView addWall() {
-		Image wallImg = new Image("sample/res/wallBlock.png");
-		return new ImageView(wallImg);
-	}*/
 	
 	private void onKeyListener(KeyEvent e) {
 		switch (e.getCode()) {
