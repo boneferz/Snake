@@ -1,6 +1,6 @@
 package sample;
 
-public class LevelMap {
+public class LevelMap extends Walls {
 	public int[][] level = {
 		{ 3,  2}, { 2,  2}, { 2,  3}, { 2, 12}, { 2, 13}, { 3, 13},
 		{16, 13}, {16, 12}, {16,  3}, {16,  2}, {15,  2}, { 9,  2},

@@ -1,9 +1,13 @@
 package sample;
 
-import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SnakeBody {
 	private Pane parent;
@@ -16,42 +20,60 @@ public class SnakeBody {
 	private ImageView head;
 	
 	// moving
-	private String direction;
 	private int vectorX = 1;
 	private int vectorY = 1;
 	private final String UP = "up";
 	private final String DOWN = "down";
 	private final String LEFT = "left";
 	private final String RIGHT = "right";
+	private String direction;
 	
 	private boolean isLive = false;
 	private boolean isWent = true;
 	
+	private int initX = 1;
+	private int initY = 1;
 	
-	private void init(int x, int y) {
-		body[0].setX(x);
-		body[0].setY(y);
-		body[0].setOpacity(1);
-		body[0].setRotate(45);
-	}
+	// events
+	private EventListener listener;
+	public static final String DEATH = "death";
 	
-	public void reset() {
-		isLive = true;
-		direction = RIGHT;
-		
-		parent.getChildren().add(head);
-		init(1, 1);
-	}
 	
-	public SnakeBody(Pane rootPane, GameField gameFieldData) {
+	
+	// Consctructor() >> разовая инициализация
+	public SnakeBody(Pane rootPane, GameField gameFieldData, int initX, int initY) {
 		this.parent = rootPane;
 		this.gameField = gameFieldData;
+		this.initX = initX * gameField.step + 1;
+		this.initY = initY * gameField.step + 1;
+		
+		// keys listener
+		Main.stage.addEventHandler(KeyEvent.KEY_PRESSED, this::onKeyListener);
 		
 		addPart();
 		head = body[0];
+		body[0].setRotate(45);
 		
+		init();
+	}
+	// init() >> значения по умолчанию
+	// (повторно используется - при сбросе и при инициализации)
+	private void init() {
 		isLive = true;
-		
+		isWent = false;
+		direction = RIGHT;
+		body[0].setX(initX);
+		body[0].setY(initY);
+	}
+	// reset() >> сброс
+	public void reset() {
+		init();
+		parent.getChildren().add(body[0]);
+		body[0].setOpacity(1);
+	}
+	
+	public void addEventListener(EventListener el) {
+		this.listener = el;
 	}
 	
 	public ImageView addPart() {
@@ -75,44 +97,52 @@ public class SnakeBody {
 	}
 	
 	public void snakeMove() {
-		
-		// death > borders
-		if (getY() < gameField.borderTop + gameField.step && direction.equals(UP)
-				|| getY() > gameField.borderBottom - gameField.step && direction.equals(DOWN)
-				|| getX() > gameField.borderRight - gameField.step && direction.equals(RIGHT)
-				|| getX() < gameField.borderLeft + gameField.step && direction.equals(LEFT)) {
-			die();
-			return;
+		if (isLive) {
+			// death > borders
+			if (getY() < gameField.borderTop + gameField.step && direction.equals(UP)
+					|| getY() > gameField.borderBottom - gameField.step && direction.equals(DOWN)
+					|| getX() > gameField.borderRight - gameField.step && direction.equals(RIGHT)
+					|| getX() < gameField.borderLeft + gameField.step && direction.equals(LEFT)) {
+				System.out.println("die();");
+				die();
+				return;
+			}
+			
+			// death > suicide
+			if (suicide(vectorX * gameField.step, vectorY * gameField.step)) {
+				die();
+				return;
+			}
+			
+			// switch vector direction
+			switch (direction) {
+				case UP:
+					vectorX = 0;
+					vectorY = -1;
+					break;
+				case DOWN:
+					vectorX = 0;
+					vectorY = 1;
+					break;
+				case LEFT:
+					vectorX = -1;
+					vectorY = 0;
+					break;
+				case RIGHT:
+					vectorX = 1;
+					vectorY = 0;
+					break;
+			}
+			
+			// went to setting
+			if (direction.equals(UP)
+					|| direction.equals(DOWN)
+					|| direction.equals(LEFT)
+					|| direction.equals(RIGHT)) isWent = true;
+			
+			// move
+			move( vectorX * gameField.step,  vectorY * gameField.step);
 		}
-		
-		// death > suicide
-		if (suicide(vectorX * gameField.step, vectorY * gameField.step)) {
-			die();
-			return;
-		}
-		
-		// switch vector direction
-		switch (direction) {
-			case UP:
-				vectorX = 0;
-				vectorY = -1;
-				break;
-			case DOWN:
-				vectorX = 0;
-				vectorY = 1;
-				break;
-			case LEFT:
-				vectorX = -1;
-				vectorY = 0;
-				break;
-			case RIGHT:
-				vectorX = 1;
-				vectorY = 0;
-				break;
-		}
-		
-		// move
-		move( vectorX * gameField.step,  vectorY * gameField.step);
 	}
 	
 	private void move(double x, double y) {
@@ -141,6 +171,42 @@ public class SnakeBody {
 		}
 	}
 	
+	private void onKeyListener(KeyEvent e) {
+		switch (e.getCode()) {
+			case ESCAPE:
+				destroy();
+				reset();
+				break;
+			
+			case SHIFT:
+				addPart();
+				break;
+		}
+		
+		if ((e.getCode() == KeyCode.UP
+				|| e.getCode() == KeyCode.DOWN
+				|| e.getCode() == KeyCode.LEFT
+				|| e.getCode() == KeyCode.RIGHT) && isWent) {
+			isWent = false;
+			
+			switch (e.getCode()) {
+				case UP:
+					if (!direction.equals(DOWN)) direction = UP;
+					break;
+				case DOWN:
+					if (!direction.equals(UP)) direction = DOWN;
+					break;
+				case LEFT:
+					if (!direction.equals(RIGHT)) direction = LEFT;
+					break;
+				case RIGHT:
+					if (!direction.equals(LEFT)) direction = RIGHT;
+					break;
+			}
+		}
+		System.out.println(":" + direction);
+	}
+	
 	private boolean suicide(int vectorX, int vectorY) {
 		for (int i = 1; i < body.length; i++) {
 			if (body[0].getX() + vectorX == body[i].getX()
@@ -152,10 +218,13 @@ public class SnakeBody {
 	}
 	
 	private void die() {
+		isLive = false;
+		
 		for (int i = 0; i < body.length; i++) {
 			body[i].setOpacity(0.65);
 		}
-		isLive = false;
+		
+		listener.handler(DEATH);
 	}
 	
 	public void destroy() {

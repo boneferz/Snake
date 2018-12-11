@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
@@ -49,18 +50,12 @@ public class Controller {
 	
 	@FXML
 	public void initialize () {
-		// enter frame loop
-		timeline.setCycleCount(Timeline.INDEFINITE);
-		timeline.setOnFinished( e -> onUpdate());
-		timeline.getKeyFrames().add(new KeyFrame(Duration.millis(fps), timeline.getOnFinished()));
-		timeline.play();
-		
 		// objects instance
 		gameFieldData = new GameField();
 		level = new LevelMap();
 //		walls = new Walls(gamePane, gameFieldData);
 //		apples = new Apples(gamePane, gameFieldData);
-		snake = new SnakeBody(gamePane, gameFieldData);
+		snake = new SnakeBody(gamePane, gameFieldData, 1, 2);
 		
 		// set data
 		setRecord(record);
@@ -68,12 +63,35 @@ public class Controller {
 		setDeath(death);
 		setLength(1);
 		
-		// create game objects
-//		apples.addLoot(40);
+		// enter frame loop
+		timeline.setCycleCount(Timeline.INDEFINITE);
+		timeline.setOnFinished( e -> onUpdate());
+		timeline.getKeyFrames().add(new KeyFrame(Duration.millis(fps), timeline.getOnFinished()));
+		timeline.play();
+		
+		
+		// event dispatch
+		EventListener snakeListener = this::snakeHandler;
+		snake.addEventListener(snakeListener);
 		
 		// keys listener
-//		Main.stage.addEventHandler(KeyEvent.KEY_PRESSED, this::onKeyListener);
+		//Main.stage.addEventHandler(KeyEvent.KEY_PRESSED, this::onKeyListener);
+		
+		// create game objects
+//		apples.addLoot(40);
+
 //		levelRedactor();
+		
+		reset();
+	}
+	
+	private void snakeHandler(String s) {
+		switch (s) {
+			case SnakeBody.DEATH:
+				System.out.println("snakeDie();");
+				snakeDie();
+				break;
+		}
 	}
 	
 	private void reset() {
@@ -81,10 +99,6 @@ public class Controller {
 		setScore(0);
 		setDeath(death);
 		setLength(1);
-		
-		// snake
-		snake.destroy();
-		snake.reset();
 	}
 	
 	/*private void levelRedactor() {
@@ -124,8 +138,11 @@ public class Controller {
 	
 	private void onUpdate() {
 		
+		snake.snakeMove();
+		
 		if (snake.isLive()) {
-			snake.snakeMove();
+		
+		
 //			apples.onCollectLoot(); <<<<<<
 			
 			// death > wall <<<<<<
@@ -142,13 +159,6 @@ public class Controller {
 				}
 			}*/
 			
-			// went to setting <<<<<<
-			/*if (direction.equals(UP)
-					|| direction.equals(DOWN)
-					|| direction.equals(LEFT)
-					|| direction.equals(RIGHT)) isWent = true;*/
-		} else {
-			snakeDie();
 		}
 	}
 	
@@ -165,43 +175,13 @@ public class Controller {
 		return new ImageView(wallImg);
 	}*/
 	
-/*	private void onKeyListener(KeyEvent e) {
+	private void onKeyListener(KeyEvent e) {
 		switch (e.getCode()) {
-			case ESCAPE:
-				reset();
-				break;
-				
-			case SHIFT:
-				snake.addPart();
-				break;
-				
 			case CONTROL:
 				//parseLevelArr();
 				break;
 		}
-		
-		*//*if ((e.getCode() == KeyCode.UP
-				|| e.getCode() == KeyCode.DOWN
-				|| e.getCode() == KeyCode.LEFT
-				|| e.getCode() == KeyCode.RIGHT) && isWent) {
-			isWent = false;
-			
-			*//**//*switch (e.getCode()) {
-				case UP:
-					if (!direction.equals(DOWN)) direction = UP;
-					break;
-				case DOWN:
-					if (!direction.equals(UP)) direction = DOWN;
-					break;
-				case LEFT:
-					if (!direction.equals(RIGHT)) direction = LEFT;
-					break;
-				case RIGHT:
-					if (!direction.equals(LEFT)) direction = RIGHT;
-					break;
-			}*//**//*
-		}*//*
-	}*/
+	}
 	
 	
 	public void setRecord(int record) {
