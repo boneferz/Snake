@@ -32,7 +32,7 @@ public class Controller {
 	private Label textRecord;
 	
 	// screen update
-	private int fps = 200;
+	private int fps = 225;
 	private Timeline timeline = new Timeline();
 	
 	// data
@@ -46,7 +46,6 @@ public class Controller {
 	private SnakeBody snake;
 	private Apples appleLoot;
 	private Walls walls;
-	private Collisions isHit;
 	
 	// states
 	private String state;
@@ -59,7 +58,6 @@ public class Controller {
 	public void initialize () {
 		// objects instance
 		gameFieldData = new GameField();
-		isHit = new Collisions();
 		walls = new Walls(gamePane, gameFieldData);
 		snake = new SnakeBody(gamePane, gameFieldData, 2, 1);
 		appleLoot = new Apples(gamePane, gameFieldData);
@@ -77,17 +75,15 @@ public class Controller {
 		timeline.play();
 		
 		// event dispatch
-		EventListener snakeListener = this::snakeHandler;
+		EventListener snakeListener = this::handler_snake;
+		EventListener wallListener = this::handler_wall;
+		EventListener lootListener = this::handler_loot;
 		snake.addEventListener(snakeListener);
-		
-		EventListener hitListener = this::hitHandler;
-		isHit.addEventListener(hitListener);
+		walls.addEventListener(wallListener);
+		appleLoot.addEventListener(lootListener);
 		
 		// keys listener
 		Main.stage.addEventHandler(KeyEvent.KEY_PRESSED, this::onKeyListener);
-		
-		// create game objects
-//		apples.addLoot(40);
 
 //		levelRedactor();
 		
@@ -140,41 +136,36 @@ public class Controller {
 	
 	private void onUpdate(ActionEvent e) {
 		if (state.equals(GAMEPLAY)) {
-			snake.snakeMove();
-			isHit.collision(snake, walls.wallBlocks);
+			snake.deathChecking();
+			walls.hitSnake(snake);
 			snake.move();
+			appleLoot.onCollectLoot(snake);
+		}
+	}
+	
+	private void handler_snake(String s) {
+		snakeDie();
+	}
+	
+	private void handler_wall(String s) {
+		snake.die();
+	}
+	
+	private void handler_loot(String s) {
+		snake.addPart();
 		
-		/*if (appleLoot.isThereIs()) {
-			isHit.collision(snake, appleLoot.apples);
-		}*/
-		}
+		setScore(score += 15);
+		setLength(++length);
 	}
 	
-	private void hitHandler(String s) {
-		switch (s) {
-			case Collisions.WALL:
-				System.out.println(" 2 Collisions.WALL");
-				snake.die();
-				//System.out.println("death with wall <<");
-//				snakeDie();
-				break;
-		}
-	}
-	
-	private void snakeHandler(String s) {
-		switch (s) {
-			case SnakeBody.DEATH:
-				System.out.println("    4 snakeDie()");
-				setState(DEATH);
-				snakeDie();
-				break;
-		}
-	}
 	
 	private void snakeDie() {
+		setState(DEATH);
+		
 		Shake.toShake(root);
-		// data
-		if (record < score) setRecord(score);
+		
+		if (record < score)
+			setRecord(score);
 		setDeath(++death);
 		setScore(0);
 	}
@@ -182,10 +173,9 @@ public class Controller {
 	private void onKeyListener(KeyEvent e) {
 		switch (e.getCode()) {
 			case ESCAPE:
-				System.out.println("esc");
 				snake.destroy();
 				snake.reset();
-				reset();
+				this.reset();
 				break;
 			
 			case SHIFT:

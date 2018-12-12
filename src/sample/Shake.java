@@ -33,7 +33,6 @@ public final class Shake { // singleton
 	
 	private void onShake(ActionEvent a) {
 		shakeDuration--;
-		System.out.println("  |shake|" + shakeDuration);
 		
 		if (shakeDuration % 2 == 0)
 			shakeObject.setLayoutX(shakeObject.getLayoutX() + shakePower);
@@ -42,11 +41,8 @@ public final class Shake { // singleton
 		
 		if (shakeDuration == 0) {
 			shakeTimeline.stop();
-			
 			shakeDuration = SHAKE_DURATION;
 			shakeObject.setLayoutX(0);
-			
-			System.out.println("");
 			return;
 		}
 	}
