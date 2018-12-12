@@ -11,10 +11,10 @@ public class Apples {
 	private Pane parent;
 	private GameField gameField;
 	
-	private ImageView apples[];
+	public ImageView apples[];
 	private int countApples = 0;
 	ColorAdjust filterForApple = new ColorAdjust(0, 0, -1, 0);
-	
+	private boolean thereIs = false;
 	
 	public Apples(Node rootPane, GameField gameFieldData) {
 		this.parent = parent;
@@ -34,6 +34,10 @@ public class Apples {
 	ImageView addApple() {
 		Image bodyImg = new Image("sample/res/apple.png");
 		return new ImageView(bodyImg);
+	}
+	
+	public boolean isThereIs() {
+		return thereIs;
 	}
 	
 	/*void onCollectLoot() {

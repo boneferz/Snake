@@ -3,30 +3,23 @@ package sample;
 import javafx.scene.image.ImageView;
 
 public class Collisions {
+	// events
+	private EventListener listener;
+	public static final String WALL = "wall";
 	
-	public boolean collision(SnakeBody snake, ImageView[] hitObject) {
-		for (int i = 0; i < hitObject.length; i++) {
-			if (snake.nextX() == hitObject[i].getX()
-					&& snake.nextY() == hitObject[i].getY()) {
-//				snakeDie();
-				System.out.println("snake + wall : HIT!");
-				return true;
+	public void collision(SnakeBody snake, ImageView[] hitObject) {
+		if (snake.isLive()) {
+			for (int i = 0; i < hitObject.length; i++) {
+				if (snake.nextX() == hitObject[i].getX() && snake.nextY() == hitObject[i].getY()) {
+					System.out.println("1 snake + wall -- [HIT]");
+					listener.dispatch(WALL);
+					hitObject[i].setRotate(hitObject[i].getRotate() + 25);
+				}
 			}
 		}
-		return false;
 	}
 	
-	/*
-	
-	public boolean collision(ImageView snakeHead, ImageView[] hitObject) {
-		// death > wall <<<<<<
-		for (int i = 0; i < wallBlocks.length; i++) {
-			if (snake.getX() + (step * vectorX) == wallBlocks[i].getX()
-					&& snake.getY() + (step * vectorY) == wallBlocks[i].getY()) {
-//						System.out.println("death >> wall");
-//				snakeDie();
-				return true;
-			}
-		}
-	}*/
+	public void addEventListener(EventListener el) {
+		this.listener = el;
+	}
 }

@@ -20,9 +20,6 @@ public class Walls {
 		
 		level = new LevelMap();
 		wallBlocks = new ImageView[level.getLevel().length];
-		System.out.println(level.getLevel().length);
-		System.out.println(addWall());
-		
 		
 		for (int i = 0; i < level.getLevel().length; i++) {
 			wallBlocks[i] = addWall();

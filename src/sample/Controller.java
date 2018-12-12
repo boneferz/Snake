@@ -1,5 +1,6 @@
 package sample;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -43,19 +44,25 @@ public class Controller {
 	// objects
 	private GameField gameFieldData;
 	private SnakeBody snake;
-	private Apples apples;
+	private Apples appleLoot;
 	private Walls walls;
 	private Collisions isHit;
+	
+	// states
+	private String state;
+	private String GAMEPLAY = "gameplay";
+	private String DEATH = "death";
+	
 	
 	
 	@FXML
 	public void initialize () {
 		// objects instance
 		gameFieldData = new GameField();
-		Collisions isHit = new Collisions();
+		isHit = new Collisions();
 		walls = new Walls(gamePane, gameFieldData);
-		snake = new SnakeBody(gamePane, gameFieldData, 1, 2);
-//		apples = new Apples(gamePane, gameFieldData);
+		snake = new SnakeBody(gamePane, gameFieldData, 2, 1);
+		appleLoot = new Apples(gamePane, gameFieldData);
 		
 		// set data
 		setRecord(record);
@@ -65,17 +72,19 @@ public class Controller {
 		
 		// enter frame loop
 		timeline.setCycleCount(Timeline.INDEFINITE);
-		timeline.setOnFinished( e -> onUpdate());
+		timeline.setOnFinished(this::onUpdate);
 		timeline.getKeyFrames().add(new KeyFrame(Duration.millis(fps), timeline.getOnFinished()));
 		timeline.play();
-		
 		
 		// event dispatch
 		EventListener snakeListener = this::snakeHandler;
 		snake.addEventListener(snakeListener);
 		
+		EventListener hitListener = this::hitHandler;
+		isHit.addEventListener(hitListener);
+		
 		// keys listener
-		//Main.stage.addEventHandler(KeyEvent.KEY_PRESSED, this::onKeyListener);
+		Main.stage.addEventHandler(KeyEvent.KEY_PRESSED, this::onKeyListener);
 		
 		// create game objects
 //		apples.addLoot(40);
@@ -85,20 +94,13 @@ public class Controller {
 		reset();
 	}
 	
-	private void snakeHandler(String s) {
-		switch (s) {
-			case SnakeBody.DEATH:
-				System.out.println("snakeDie();");
-				snakeDie();
-				break;
-		}
-	}
-	
 	private void reset() {
 		setRecord(record);
 		setScore(0);
 		setDeath(death);
 		setLength(1);
+		
+		setState(GAMEPLAY);
 	}
 	
 	/*private void levelRedactor() {
@@ -136,13 +138,37 @@ public class Controller {
 		System.out.println(levelTxt);
 	}*/
 	
-	private void onUpdate() {
+	private void onUpdate(ActionEvent e) {
+		if (state.equals(GAMEPLAY)) {
+			snake.snakeMove();
+			isHit.collision(snake, walls.wallBlocks);
+			snake.move();
 		
-		snake.snakeMove();
-		
-		isHit.collision(snake, walls.wallBlocks);
-		
-//		apples.onCollectLoot(); <<<<<<
+		/*if (appleLoot.isThereIs()) {
+			isHit.collision(snake, appleLoot.apples);
+		}*/
+		}
+	}
+	
+	private void hitHandler(String s) {
+		switch (s) {
+			case Collisions.WALL:
+				System.out.println(" 2 Collisions.WALL");
+				snake.die();
+				//System.out.println("death with wall <<");
+//				snakeDie();
+				break;
+		}
+	}
+	
+	private void snakeHandler(String s) {
+		switch (s) {
+			case SnakeBody.DEATH:
+				System.out.println("    4 snakeDie()");
+				setState(DEATH);
+				snakeDie();
+				break;
+		}
 	}
 	
 	private void snakeDie() {
@@ -155,6 +181,17 @@ public class Controller {
 	
 	private void onKeyListener(KeyEvent e) {
 		switch (e.getCode()) {
+			case ESCAPE:
+				System.out.println("esc");
+				snake.destroy();
+				snake.reset();
+				reset();
+				break;
+			
+			case SHIFT:
+				snake.addPart();
+				break;
+				
 			case CONTROL:
 				//parseLevelArr();
 				break;
@@ -177,6 +214,11 @@ public class Controller {
 	public void setLength(int length) {
 		this.length = length;
 		textLength.setText(String.valueOf(length));
+	}
+	
+	
+	public void setState(String state) {
+		this.state = state;
 	}
 	
 }
