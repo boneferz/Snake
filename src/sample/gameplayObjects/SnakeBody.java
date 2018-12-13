@@ -1,50 +1,45 @@
-package sample;
+package sample.gameplayObjects;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
+import sample.Controller;
+import sample.enums.Direction;
+import sample.events.EventListener;
+import sample.data.GameField;
+import sample.Main;
 
-import java.util.ArrayList;
-import java.util.List;
+import static sample.enums.Direction.*;
 
 public class SnakeBody {
 	private Pane parent;
 	private GameField gameField;
+	private EventListener listener;
+	
 	// body
 	private int length = 1;
+	private ImageView head;
 	private ImageView body[] = new ImageView[length];
 	private double tempX;
 	private double tempY;
-	private ImageView head;
 	
 	// moving
 	private int vectorX = 1;
 	private int vectorY = 1;
-	private final String UP = "up";
-	private final String DOWN = "down";
-	private final String LEFT = "left";
-	private final String RIGHT = "right";
-	private String direction;
-	
-	private boolean isLive = false;
-	private boolean canChangeDirection = true;
+	private Direction direction;
 	
 	private int initX = 1;
 	private int initY = 1;
-	
-	// events
-	private EventListener listener;
-	public static final String DEATH = "death";
-	
-	ImageView compas;
+	private boolean isLive = false;
+	private boolean canChangeDirection = true;
 	
 	
 	
-	public SnakeBody(Pane rootPane, GameField gameFieldData, int initX, int initY) {
-		this.parent = rootPane;
-		this.gameField = gameFieldData;
+	public SnakeBody(int initX, int initY) {
+		this.parent = Controller.getGamePane();
+		this.gameField = GameField.getInstance();
 		this.initX = initX * gameField.step + 1;
 		this.initY = initY * gameField.step + 1;
 		
@@ -54,14 +49,6 @@ public class SnakeBody {
 		addPart();
 		head = body[0];
 		body[0].setRotate(45);
-		
-		// debug
-		Image c = new Image("sample/res/apple.png");
-		compas = new ImageView(c);
-		compas.setScaleX(0.5);
-		compas.setScaleY(0.5);
-		parent.getChildren().add(compas);
-		compas.setTranslateZ(99);
 		
 		init();
 	}
@@ -84,10 +71,6 @@ public class SnakeBody {
 		body[0].setOpacity(1);
 	}
 	
-	public void addEventListener(EventListener el) {
-		this.listener = el;
-	}
-	
 	public ImageView addPart() {
 		// to increase arr
 		if (body.length < length) {
@@ -98,7 +81,7 @@ public class SnakeBody {
 			body = newArr;
 		}
 		// graphic
-		Image bodyImg = new Image("sample/res/partOfBody.png");
+		Image bodyImg = new Image("sample/_res/partOfBody.png");
 		ImageView imageView = new ImageView(bodyImg);
 		imageView.setX(tempX);
 		imageView.setY(tempY);
@@ -111,22 +94,19 @@ public class SnakeBody {
 	public void deathChecking() {
 		// death -> borders
 		if (nextY() < gameField.borderTop
-				|| nextY() > gameField.borderBottom
-				|| nextX() > gameField.borderRight
-				|| nextX() < gameField.borderLeft ) {
+		 || nextY() > gameField.borderBottom
+		 || nextX() > gameField.borderRight
+		 || nextX() < gameField.borderLeft ) {
 			die();
 		}
 		
 		// death -> suicide
 		for (int i = 1; i < body.length; i++) {
-			if (nextX() == body[i].getX() && nextY() == body[i].getY()) {
+			if (nextX() == body[i].getX()
+			 && nextY() == body[i].getY()) {
 				die();
 			}
 		}
-		
-		// debug
-		compas.setX(nextX());
-		compas.setY(nextY());
 	}
 	
 	public void move() {
@@ -166,7 +146,7 @@ public class SnakeBody {
 			body[i].setOpacity(0.65);
 		}
 		
-		listener.dispatch(DEATH);
+		listener.dispatch();
 	}
 	
 	public void destroy() {
@@ -182,9 +162,9 @@ public class SnakeBody {
 	
 	private void onKeyListener(KeyEvent e) {
 		if ((e.getCode() == KeyCode.UP
-				|| e.getCode() == KeyCode.DOWN
-				|| e.getCode() == KeyCode.LEFT
-				|| e.getCode() == KeyCode.RIGHT) && canChangeDirection) {
+		  || e.getCode() == KeyCode.DOWN
+		  || e.getCode() == KeyCode.LEFT
+		  || e.getCode() == KeyCode.RIGHT) && canChangeDirection) {
 			canChangeDirection = false;
 			
 			// switch vector direction
@@ -219,6 +199,10 @@ public class SnakeBody {
 					break;
 			}
 		}
+	}
+	
+	public void addEventListener(EventListener el) {
+		this.listener = el;
 	}
 	
 	public double nextX() {

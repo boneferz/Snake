@@ -8,6 +8,12 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
     
+    /**
+     *  ESC - return
+     *  SHIFT - add snake part
+     *
+     * */
+    
     public static Stage stage;
 
     @Override

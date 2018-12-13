@@ -1,4 +1,4 @@
-package sample;
+package sample.utils;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -6,8 +6,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.util.Duration;
 
-public final class Shake { // singleton
-	
+public final class Shake {
 	private static final Shake instance = new Shake();
 	
 	private Node shakeObject;
@@ -43,7 +42,6 @@ public final class Shake { // singleton
 			shakeTimeline.stop();
 			shakeDuration = SHAKE_DURATION;
 			shakeObject.setLayoutX(0);
-			return;
 		}
 	}
 }

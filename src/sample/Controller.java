@@ -1,20 +1,27 @@
 package sample;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.event.ActionEvent;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.control.Label;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.util.Duration;
+import sample.enums.StatesOfGame;
+import sample.events.EventListener;
+import sample.gameplayObjects.Apples;
+import sample.gameplayObjects.SnakeBody;
+import sample.gameplayObjects.Walls;
+import sample.utils.Shake;
 
-public class Controller {
+import static sample.enums.StatesOfGame.*;
+
+public final class Controller {
 	
 	@FXML
-	private Pane gamePane;
+	private AnchorPane root;
 	
 	@FXML
 	private Label textScore;
@@ -23,13 +30,13 @@ public class Controller {
 	private Label textDeath;
 	
 	@FXML
-	private AnchorPane root;
+	private Label textRecord;
+	
+	@FXML
+	public Pane gamePane;
 	
 	@FXML
 	private Label textLength;
-	
-	@FXML
-	private Label textRecord;
 	
 	// screen update
 	private int fps = 225;
@@ -42,25 +49,23 @@ public class Controller {
 	private int length = 1;
 	
 	// objects
-	private GameField gameFieldData;
 	private SnakeBody snake;
 	private Apples appleLoot;
 	private Walls walls;
 	
 	// states
-	private String state;
-	private String GAMEPLAY = "gameplay";
-	private String DEATH = "death";
-	
+	private StatesOfGame state;
+	private static Pane parentPane;
 	
 	
 	@FXML
 	public void initialize () {
+		parentPane = gamePane;
+		
 		// objects instance
-		gameFieldData = new GameField();
-		walls = new Walls(gamePane, gameFieldData);
-		snake = new SnakeBody(gamePane, gameFieldData, 2, 1);
-		appleLoot = new Apples(gamePane, gameFieldData);
+		walls = new Walls();
+		snake = new SnakeBody(2, 1);
+		appleLoot = new Apples();
 		
 		// set data
 		setRecord(record);
@@ -85,8 +90,6 @@ public class Controller {
 		// keys listener
 		Main.stage.addEventHandler(KeyEvent.KEY_PRESSED, this::onKeyListener);
 
-//		levelRedactor();
-		
 		reset();
 	}
 	
@@ -99,41 +102,6 @@ public class Controller {
 		setState(GAMEPLAY);
 	}
 	
-	/*private void levelRedactor() {
-		gameField.addEventHandler(MouseEvent.MOUSE_CLICKED, this::onGameFieldListener);
-	}
-	
-	private void onGameFieldListener(MouseEvent e) {
-		Point pointOfClick = new Point();
-		pointOfClick.x = ( ((int) e.getX()) - ((int) e.getX()) % step ) / step;
-		pointOfClick.y = ( ((int) e.getY()) - ((int) e.getY()) % step ) / step;
-		
-		wallPositionsMap.add(pointOfClick);
-		
-		
-		System.out.println("point: " + pointOfClick);
-		System.out.println("");
-		
-		Image w = new Image("sample/res/apple.png");
-		ImageView wView = new ImageView(w);
-		wView.setOpacity(0.5);
-		wView.setX(pointOfClick.x * step + 1);
-		wView.setY(pointOfClick.y * step + 1);
-		gameField.getChildren().add(wView);
-	}
-	
-	private void parseLevelArr() {
-		String levelTxt = "{";
-		for (int i = 0; i < wallPositionsMap.size(); i++) {
-			levelTxt += "{" + wallPositionsMap.get(i).x + ", "+ wallPositionsMap.get(i).y + "}";
-			if (i != wallPositionsMap.size() - 1) levelTxt += ", ";
-			if (i != 0 && i % 6 == 0) levelTxt += "\n";
-		}
-		levelTxt += "}";
-		// output level data
-		System.out.println(levelTxt);
-	}*/
-	
 	private void onUpdate(ActionEvent e) {
 		if (state.equals(GAMEPLAY)) {
 			snake.deathChecking();
@@ -143,25 +111,22 @@ public class Controller {
 		}
 	}
 	
-	private void handler_snake(String s) {
+	private void handler_snake() {
 		snakeDie();
 	}
 	
-	private void handler_wall(String s) {
+	private void handler_wall() {
 		snake.die();
 	}
 	
-	private void handler_loot(String s) {
+	private void handler_loot() {
 		snake.addPart();
-		
 		setScore(score += 15);
 		setLength(++length);
 	}
 	
-	
 	private void snakeDie() {
 		setState(DEATH);
-		
 		Shake.toShake(root);
 		
 		if (record < score)
@@ -181,13 +146,8 @@ public class Controller {
 			case SHIFT:
 				snake.addPart();
 				break;
-				
-			case CONTROL:
-				//parseLevelArr();
-				break;
 		}
 	}
-	
 	
 	public void setRecord(int record) {
 		this.record = record;
@@ -206,9 +166,12 @@ public class Controller {
 		textLength.setText(String.valueOf(length));
 	}
 	
-	
-	public void setState(String state) {
+	public static Pane getGamePane() {
+		return parentPane;
+	}
+	public void setState(StatesOfGame state) {
 		this.state = state;
 	}
 	
 }
+

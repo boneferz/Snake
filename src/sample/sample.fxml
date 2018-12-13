@@ -12,7 +12,7 @@
    <children>
       <ImageView layoutX="-7.0" layoutY="-6.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="@res/backgroundBig.png" />
+            <Image url="@_res/backgroundBig.png" />
          </image>
       </ImageView>
       <Label fx:id="textScore" layoutX="55.0" layoutY="192.0" text="153" textFill="WHITE">
@@ -47,6 +47,11 @@
          <effect>
             <Glow level="0.5" />
          </effect>
+      </Label>
+      <Label layoutX="236.0" layoutY="285.0" opacity="0.16" text="© boneferz 2018" textFill="#803434">
+         <font>
+            <Font size="9.0" />
+         </font>
       </Label>
    </children>
 </AnchorPane>
